@@ -51,7 +51,7 @@ public class Sudoku {
 			return;
 		}
 		else{
-			System.out.println(matrice.getCelleVuote());
+			//System.out.println(matrice.getCelleVuote());
 			if(matrice.getNextcasellaVuota().size()==3){
 				//System.out.println(matrice.getNextcasellaVuota());
 				ArrayList<Object> list = matrice.getNextcasellaVuota();
