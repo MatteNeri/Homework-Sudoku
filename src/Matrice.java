@@ -11,9 +11,19 @@ public class Matrice {
 	
 	private ArrayList<ArrayList<Casella>> colonne;
 	
-	private int celleVuote = 81;
+	private int celleVuote;
+	
+	// campi per la struttura ad albero
+	private Matrice padre;
+	private ArrayList<Matrice> figli;
+	private Integer[] coordinateCasella = new Integer[2];
 	
 	public Matrice(String pathname){
+		this.celleVuote = 81;
+		this.padre = null;
+		this.figli = new ArrayList<Matrice>();
+		this.coordinateCasella[0] = null;
+		this.coordinateCasella[1] = null;
 		matrice = new Casella[9][9];
 		blocchi = new ArrayList<ArrayList<Casella>>();
 		righe = new ArrayList<ArrayList<Casella>>();
@@ -54,13 +64,83 @@ public class Matrice {
 			e.printStackTrace();
 		}
 	}
+	/*
+	 * crea una nuova matrice uguare alla matrice p,, ma con la casella
+	 * in posizione (i,k) settata a c
+	 */
+	public Matrice(int i, int k, Matrice p, Casella c){
+		this.padre = p;
+		this.celleVuote = this.getPadre().getCelleVuote()-1;
+		this.figli = new ArrayList<Matrice>();
+		this.coordinateCasella[0] = i;
+		this.coordinateCasella[1] = k;
+		this.matrice = new Casella[9][9];
+		this.blocchi = new ArrayList<ArrayList<Casella>>();
+		this.righe = new ArrayList<ArrayList<Casella>>();
+		this.colonne = new ArrayList<ArrayList<Casella>>();
+		for(int o=0; o<9; o++){
+			this.blocchi.add(new ArrayList<Casella>());
+			this.righe.add(new ArrayList<Casella>());
+			this.colonne.add(new ArrayList<Casella>());
+		}
+		for(int x=0; x<9; x++){
+			for(int y=0; y<9; y++){
+				if (i==x && k==y){
+					this.matrice[x][y] = c;
+					this.blocchi.get(trovaBlocco(x,y)).add(c);
+					this.righe.get(x).add(c);
+					this.colonne.get(y).add(c);
+				}
+				else{
+					Casella newCasella = null;
+					if(p.getCasella(x, y).isVuota()){
+						newCasella = new Casella(p.getCasella(x, y).getValoriPossibili());
+					}
+					else{
+						newCasella = new Casella(p.getCasella(x, y).getValore());
+					}
+					this.matrice[x][y] = newCasella;
+					this.blocchi.get(trovaBlocco(x,y)).add(newCasella);
+					this.righe.get(x).add(newCasella);
+					this.colonne.get(y).add(newCasella);
+				}
+			}
+		}
+		//this.aggiornaMatrice(i, k, c);
+	}
+	
+	public Matrice getPadre(){
+		return this.padre;
+	}
 	
 	public Casella getCasella(int i, int k){
 		return matrice[i][k];
 	}
 	
+	public void addFiglio(Matrice m){
+		this.figli.add(m);
+	}
+	
 	public ArrayList<ArrayList<Casella>> getBlocchi(){
 		return blocchi;
+	}
+	
+	public ArrayList<Object> getNextcasellaVuota(){
+		Casella c = null;
+		ArrayList<Object> list = new ArrayList<Object>();
+		for(int i=0; i<9; i++){
+			for(int k=0; k<9; k++){
+				c = matrice[i][k];
+				if(c.isVuota()){
+					list.add(c);
+					list.add(i);
+					list.add(k);
+					return list;
+				}
+			}
+		}
+		list = null;
+		return list;
 	}
 	
 	public int trovaBlocco(int i, int k){
@@ -99,6 +179,26 @@ public class Matrice {
 			}
 		}
 		return n;
+	}
+	
+	public void aggiornaMatrice(int i, int k, Casella c){
+		Casella c1 = this.matrice[i][k];
+		int indiceBlocco = -1;
+		this.matrice[i][k] = c;
+		this.righe.get(i).set(k, c);
+		this.colonne.get(k).set(i, c);
+		for(Casella l : this.blocchi.get(this.trovaBlocco(i, k))){
+			if(l.equals(c1)){
+				indiceBlocco = this.blocchi.get(this.trovaBlocco(i, k)).indexOf(l);
+			}			
+		}
+		this.blocchi.get(trovaBlocco(i,k)).set(indiceBlocco, c);
+		/*
+		System.out.println(this.toString());
+		System.out.println(this.getBlocchi().get(0).get(0).getHashCode());
+		System.out.println(this.getColonne().get(0).get(0).getHashCode());
+		System.out.println(this.getRighe().get(0).get(0).getHashCode());
+		*/
 	}
 	
 	@Override
@@ -159,5 +259,23 @@ public class Matrice {
 
 	public void setColonne(ArrayList<ArrayList<Casella>> colonne) {
 		this.colonne = colonne;
+	}
+	
+	/*
+	 * controlla se la casella in posizione (i,k) ha un valore corretto
+	 * in base ai valori delle caselle presenti nel blocco, nella riga
+	 * e nella colonna della casella stessa
+	 */
+	public boolean controllaCorrettezza(int i, int k, Casella c){
+		if(this.getColonne().get(k).contains(c)){
+			return false;
+		}
+		else if(this.getRighe().get(i).contains(c)){
+			return false;
+		}
+		else if(this.getBlocchi().get(trovaBlocco(i,k)).contains(c)){
+			return false;
+		}
+		return true;
 	}
 }
