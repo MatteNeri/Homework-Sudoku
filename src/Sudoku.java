@@ -35,12 +35,11 @@ public class Sudoku {
 		for(int i=0; i<9; i++){
 			for(int k=0; k<9; k++){
 				if (m.getCasella(i, k).isVuota()){
-					n = n.multiply(BigInteger.valueOf(m.getCasella(i, k).getValoriPossibili().size()));
+					n = n.multiply(BigInteger.valueOf((long)m.getCasella(i, k).getValoriPossibili().size()));
 				}
 			}
 		}
-		return "spazio di ricerca:  " + n.toString()+ ""
-				+ " ("+n.toString().length()+" cifre)";
+		return "spazio di ricerca:  " + n.toString();
 	}
 	
 	public void seqSoluzioni(Matrice matrice){
@@ -74,7 +73,7 @@ public class Sudoku {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Sudoku s = new Sudoku("C:/Users/Matteo/Downloads/debugInstances/game0.txt");
+		Sudoku s = new Sudoku("C:/Users/Matteo/Downloads/debugInstances/game2.txt");
 		System.out.println("tempo costruzione oggetto Sudoku: "+(s.getFine()-s.getInizio())+"ms");
 		s.setInizio(System.currentTimeMillis());
 		System.out.println(s.fattoreDiRiempimento());
@@ -86,10 +85,10 @@ public class Sudoku {
 		System.out.println("risolvendo sequenzialmente...");
 		s.setInizio(System.currentTimeMillis());
 		s.seqSoluzioni(s.m);
-		System.out.println(Sudoku.soluzioni);
+		System.out.println("Soluzioni:  "+Sudoku.soluzioni);
 		s.setFine(System.currentTimeMillis());
-		if((s.getFine()-s.getInizio()>10000))
-				System.out.println("tempo sequenziale:  "+(s.getFine()-s.getInizio())/1000+"sec");
+		if((s.getFine()-s.getInizio()>1000))
+				System.out.println("tempo sequenziale:  "+Math.round((s.getFine()-s.getInizio())/1000.0)+"sec");
 		else
 			System.out.println("tempo sequenziale:  "+(s.getFine()-s.getInizio())+"ms");
 		
