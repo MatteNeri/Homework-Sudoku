@@ -11,34 +11,27 @@ public class Matrice {
 	
 	private ArrayList<ArrayList<Casella>> colonne;
 	
+	private ArrayList<Object> nextCasella;
+	
 	private int celleVuote;
 	
-	// campi per la struttura ad albero
-	private Matrice padre;
-	private ArrayList<Matrice> figli;
-	private Integer[] coordinateCasella = new Integer[2];
-	
 	public Matrice(String pathname){
+		int p = 1;
+		this.nextCasella = new ArrayList<Object>();
 		this.celleVuote = 81;
-		this.padre = null;
-		this.figli = new ArrayList<Matrice>();
-		this.coordinateCasella[0] = null;
-		this.coordinateCasella[1] = null;
 		matrice = new Casella[9][9];
 		blocchi = new ArrayList<ArrayList<Casella>>();
 		righe = new ArrayList<ArrayList<Casella>>();
 		colonne = new ArrayList<ArrayList<Casella>>();
-		for(int i=0; i<9; i++){
-			blocchi.add(new ArrayList<Casella>());
-			righe.add(new ArrayList<Casella>());
-			colonne.add(new ArrayList<Casella>());
-		}
 		try {
 			FileReader file = new FileReader(pathname);
 			BufferedReader b = new BufferedReader(file);
 			for(int i=0; i<9; i++){
 				String riga = b.readLine();
 				for(int k=0; k<9; k++){
+					this.blocchi.add(new ArrayList<Casella>());
+					this.righe.add(new ArrayList<Casella>());
+					this.colonne.add(new ArrayList<Casella>());
 					char n = riga.charAt(k);
 					if (n != '.'){
 						Casella casella = new Casella(Character.getNumericValue(n));
@@ -50,6 +43,12 @@ public class Matrice {
 					}
 					else {
 						Casella casella = new Casella();
+						if(p == 1){
+							nextCasella.add(casella);
+							nextCasella.add(i);
+							nextCasella.add(k);
+							p--;
+						}
 						matrice[i][k] = casella;
 						blocchi.get(trovaBlocco(i,k)).add(casella);
 						righe.get(i).add(casella);
@@ -69,22 +68,23 @@ public class Matrice {
 	 * in posizione (i,k) settata a c
 	 */
 	public Matrice(int i, int k, Matrice p, Casella c){
-		this.padre = p;
-		this.celleVuote = this.getPadre().getCelleVuote()-1;
-		this.figli = new ArrayList<Matrice>();
-		this.coordinateCasella[0] = i;
-		this.coordinateCasella[1] = k;
+		int u = 1;
+		nextCasella = new ArrayList<Object>();
+		this.celleVuote = p.getCelleVuote()-1;
 		this.matrice = new Casella[9][9];
 		this.blocchi = new ArrayList<ArrayList<Casella>>();
 		this.righe = new ArrayList<ArrayList<Casella>>();
 		this.colonne = new ArrayList<ArrayList<Casella>>();
-		for(int o=0; o<9; o++){
+		/*for(int o=0; o<9; o++){
 			this.blocchi.add(new ArrayList<Casella>());
 			this.righe.add(new ArrayList<Casella>());
 			this.colonne.add(new ArrayList<Casella>());
-		}
+		}*/
 		for(int x=0; x<9; x++){
 			for(int y=0; y<9; y++){
+				this.blocchi.add(new ArrayList<Casella>());
+				this.righe.add(new ArrayList<Casella>());
+				this.colonne.add(new ArrayList<Casella>());
 				if (i==x && k==y){
 					this.matrice[x][y] = c;
 					this.blocchi.get(trovaBlocco(x,y)).add(c);
@@ -95,6 +95,12 @@ public class Matrice {
 					Casella newCasella = null;
 					if(p.getCasella(x, y).isVuota()){
 						newCasella = new Casella(p.getCasella(x, y).getValoriPossibili());
+						if(u == 1){
+							nextCasella.add(newCasella);
+							nextCasella.add(x);
+							nextCasella.add(y);
+							u--;
+						}
 					}
 					else{
 						newCasella = new Casella(p.getCasella(x, y).getValore());
@@ -109,16 +115,8 @@ public class Matrice {
 		//this.aggiornaMatrice(i, k, c);
 	}
 	
-	public Matrice getPadre(){
-		return this.padre;
-	}
-	
 	public Casella getCasella(int i, int k){
 		return matrice[i][k];
-	}
-	
-	public void addFiglio(Matrice m){
-		this.figli.add(m);
 	}
 	
 	public ArrayList<ArrayList<Casella>> getBlocchi(){
@@ -126,7 +124,8 @@ public class Matrice {
 	}
 	
 	public ArrayList<Object> getNextcasellaVuota(){
-		Casella c = null;
+		return nextCasella;
+		/*Casella c = null;
 		ArrayList<Object> list = new ArrayList<Object>();
 		for(int i=0; i<9; i++){
 			for(int k=0; k<9; k++){
@@ -140,7 +139,7 @@ public class Matrice {
 			}
 		}
 		list = null;
-		return list;
+		return list;*/
 	}
 	
 	public int trovaBlocco(int i, int k){
@@ -222,7 +221,7 @@ public class Matrice {
 	 * possibili che può prendere la cella, in base ai valori
 	 * già presenti nella colonna, nella riga e nel blocco della cella.
 	 */
-	private void calcoloCellePossibili(){
+	public void calcoloCellePossibili(){
 		for(int i=0; i<9; i++){
 			for(int k=0; k<9; k++){
 				if(matrice[i][k].isVuota()){
@@ -277,5 +276,17 @@ public class Matrice {
 			return false;
 		}
 		return true;
+	}
+	
+	public void controlloPossibilitaUniche(){
+		for(int i=0; i<9; i++){
+			for(int k=0; k<9; k++){
+				Casella c = this.matrice[i][k];
+				if(c.isVuota()&&c.getValoriPossibili().size()==1){
+					this.matrice[i][k] = new Casella(c.getValoriPossibili().get(0));
+					this.celleVuote--;
+				}
+			}
+		}
 	}
 }

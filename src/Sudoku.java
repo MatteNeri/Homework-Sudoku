@@ -73,7 +73,7 @@ public class Sudoku {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Sudoku s = new Sudoku("C:/Users/Matteo/Downloads/debugInstances/game2.txt");
+		Sudoku s = new Sudoku("C:/Users/Matteo/Downloads/debugInstances/game3.txt");
 		System.out.println("tempo costruzione oggetto Sudoku: "+(s.getFine()-s.getInizio())+"ms");
 		s.setInizio(System.currentTimeMillis());
 		System.out.println(s.fattoreDiRiempimento());
