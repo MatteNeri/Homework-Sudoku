@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 public class Sudoku {
-	
+
 	private final ForkJoinPool pool;
 	private Matrice m;
 	private long inizio;
 	private long fine;
 	public static int soluzioni = 0;
 	private Integer[] primaCasellaVuota;
-	
+
 	public Sudoku(String pathname){
 		this.setInizio(System.currentTimeMillis());
 		m = new Matrice(pathname);
@@ -27,12 +27,12 @@ public class Sudoku {
 		pool = new ForkJoinPool();
 		this.setFine(System.currentTimeMillis());
 	}
-	
+
 	public String fattoreDiRiempimento(){
 		double n = 100.0 / 81 * (81.0-m.getCelleVuote());
 		return "celle vuote: "+m.getCelleVuote()+"\n"+"fattore di riempimento: " + Math.round(n) + "%";
 	}
-	
+
 	public String spazioDiRicerca(){
 		BigInteger n = BigInteger.valueOf(1);
 		for(int i=0; i<9; i++){
@@ -44,12 +44,12 @@ public class Sudoku {
 		}
 		return "spazio di ricerca:  " + n.toString();
 	}
-	
+
 	public void parSoluzioni(Matrice matrice){
 		CalcoloParallelo calc = new CalcoloParallelo(m);
 		pool.invoke(calc);
 	}
-	
+
 	public void seqSoluzioni(Matrice matrice){
 		//System.out.println(matrice.getCelleVuote());
 		if(matrice.getCelleVuote() <= 0){
@@ -79,9 +79,10 @@ public class Sudoku {
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) throws IOException {
-		Sudoku s = new Sudoku("C:/Users/Matteo/Downloads/debugInstances/game3.txt");
+		String file = args[0];
+		Sudoku s = new Sudoku(file);
 		System.out.println("tempo costruzione oggetto Sudoku: "+(s.getFine()-s.getInizio())+"ms");
 		s.setInizio(System.currentTimeMillis());
 		System.out.println(s.fattoreDiRiempimento());
@@ -110,7 +111,7 @@ public class Sudoku {
 			System.out.println("tempo parallelo:  "+Math.round((s.getFine()-s.getInizio())/1000.0)+"sec");
 		else
 		System.out.println("tempo parallelo:  "+(s.getFine()-s.getInizio())+"ms");
-		
+
 		//System.out.println(s.m);
 		/*System.out.println("BLOCCHI");
 		for(int i=0; i<9; i++){
