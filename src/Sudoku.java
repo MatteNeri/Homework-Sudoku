@@ -1,9 +1,11 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.concurrent.ForkJoinPool;
 
 public class Sudoku {
 	
+	private final ForkJoinPool pool;
 	private Matrice m;
 	private long inizio;
 	private long fine;
@@ -22,6 +24,7 @@ public class Sudoku {
 				}
 			}
 		}
+		pool = new ForkJoinPool();
 		this.setFine(System.currentTimeMillis());
 	}
 	
@@ -42,6 +45,11 @@ public class Sudoku {
 		return "spazio di ricerca:  " + n.toString();
 	}
 	
+	public void parSoluzioni(Matrice matrice){
+		CalcoloParallelo calc = new CalcoloParallelo(m);
+		pool.invoke(calc);
+	}
+	
 	public void seqSoluzioni(Matrice matrice){
 		//System.out.println(matrice.getCelleVuote());
 		if(matrice.getCelleVuote() <= 0){
@@ -51,9 +59,9 @@ public class Sudoku {
 		}
 		else{
 			//System.out.println(matrice.getCelleVuote());
-			if(matrice.getNextcasellaVuota().size()==3){
+			if(matrice.getNextCasellaVuota().size()==3){
 				//System.out.println(matrice.getNextcasellaVuota());
-				ArrayList<Object> list = matrice.getNextcasellaVuota();
+				ArrayList<Object> list = matrice.getNextCasellaVuota();
 				Casella c = (Casella)list.get(0);
 				int x = (int)list.get(1);
 				int y = (int)list.get(2);
@@ -63,7 +71,7 @@ public class Sudoku {
 					//System.out.println(x+" "+y+" "+n);
 					if(matrice.controllaCorrettezza(x, y,c1)){
 						Matrice m1 = new Matrice(x,y,matrice,c1);
-						m1.aggiornaMatrice(x, y, c1);
+						//m1.aggiornaMatrice(x, y, c1);
 						//System.out.println(matrice.toString());
 						seqSoluzioni(m1);
 					}
@@ -91,6 +99,17 @@ public class Sudoku {
 				System.out.println("tempo sequenziale:  "+Math.round((s.getFine()-s.getInizio())/1000.0)+"sec");
 		else
 			System.out.println("tempo sequenziale:  "+(s.getFine()-s.getInizio())+"ms");
+		Sudoku.soluzioni = 0;
+		System.out.println("");
+		System.out.println("risolvendo parallelamente...");
+		s.setInizio(System.currentTimeMillis());
+		s.parSoluzioni(s.m);
+		s.setFine(System.currentTimeMillis());
+		System.out.println("Soluzioni:  "+Sudoku.soluzioni);
+		if((s.getFine()-s.getInizio()>1000))
+			System.out.println("tempo parallelo:  "+Math.round((s.getFine()-s.getInizio())/1000.0)+"sec");
+		else
+		System.out.println("tempo parallelo:  "+(s.getFine()-s.getInizio())+"ms");
 		
 		//System.out.println(s.m);
 		/*System.out.println("BLOCCHI");

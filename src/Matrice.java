@@ -123,7 +123,7 @@ public class Matrice {
 		return blocchi;
 	}
 	
-	public ArrayList<Object> getNextcasellaVuota(){
+	public ArrayList<Object> getNextCasellaVuota(){
 		return nextCasella;
 		/*Casella c = null;
 		ArrayList<Object> list = new ArrayList<Object>();
